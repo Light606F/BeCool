@@ -1,5 +1,5 @@
 # スタート，リザルト，ゲーム中の画面および，各オブジェクトのクラスを作成
-# game manajer となる関数を作成，この中で描画する画面やオブジェクトを指定したい
+# game manager となる関数を作成，この中で描画する画面やオブジェクトを指定したい
 
 from random import randint
 import pyxel
@@ -21,13 +21,13 @@ JUMP_COUNT_MAX = 2
 ############################################################
 class start_screen:
 	def __init__(self):
-		pyxel.run(self.update, self.draw)	
+		pyxel.run(self.update, self.draw)
 
 	def update(self): # Q:quit, Space:start
 		if pyxel.btnp(pyxel.KEY_Q):
 			pyxel.quit()
 		elif pyxel.btnp(pyxel.KEY_S):
-			game_manajer()
+			game_manager()
 
 	def draw(self): # タイトルとキーの表示
 		pyxel.cls(0)
@@ -36,12 +36,12 @@ class start_screen:
 		pyxel.text(80, 160, "Q:quit", 5)
 
 ############################################################
-### Result 
+### Result
 ############################################################
 class result_screen:
 	def __init__(self):
 		pyxel.run(self.update, self.draw)
-		
+
 	def update(self): # Q:quit, R:return
 		if pyxel.btnp(pyxel.KEY_Q):
 			pyxel.quit()
@@ -72,7 +72,7 @@ class game_stage:
 ############################################################
 ### player object
 ### in 座標，ベクトル，ジャンプカウンタ，ジャンプフラグ，接地フラグ
-### out 
+### out
 ############################################################
 class player:
 	def __init__(self, x, y, u, v, jc, jf, g):
@@ -127,12 +127,12 @@ class player:
 		if pyxel.btn(pyxel.KEY_LEFT): # 左加速
 			self.x_axis_vector = max(self.x_axis_vector - 0.5 , -2) # 左最大速度
 		if pyxel.btnr(pyxel.KEY_LEFT): # キーを離したら vector をリセット
-			self.x_axis_vector = 0 
+			self.x_axis_vector = 0
 
 		if pyxel.btn(pyxel.KEY_RIGHT): # 右加速
 			self.x_axis_vector = min(self.x_axis_vector + 0.5 , 2) # 右最大速度 右画面端までしかいかない
 		if pyxel.btnr(pyxel.KEY_RIGHT): # キーを離したら vector をリセット
-			self.x_axis_vector = 0 
+			self.x_axis_vector = 0
 
 		if self.y_coordinate < WINDOW_HIGHT - CHARACTOR_HIGHT:
 			if self.on_graund:
@@ -143,7 +143,7 @@ class player:
 			self.y_axis_vector = 0
 
 	def jump(self): # ジャンプ処理
-		if ( 
+		if (
 			pyxel.btn(pyxel.KEY_SPACE)
 			and self.isnt_in_jumping
 			and self.jump_counter < JUMP_COUNT_MAX
@@ -161,7 +161,7 @@ class player:
 ############################################################
 ### floor object
 ### in 座標，x軸速度ベクトル
-### out 
+### out
 ############################################################
 class floor:
 	def __init__(self, x, y, u):
@@ -180,7 +180,7 @@ class floor:
 			self.y_coordinate = randint(100,160)
 		else:
 			self.x_coordinate += self.x_axis_vector # x軸移動
-	
+
 		# self.x_axis_vector = - (pyxel.frame_count % 10) # 移動中に速度変更
 
 		return [self.x_coordinate, self.y_coordinate, self.x_axis_vector]
@@ -189,9 +189,9 @@ class floor:
 		pyxel.bltm(self.x_coordinate, self.y_coordinate, 0, 0, 0, 2*4, 2)
 
 ############################################################
-### game manajer
+### game manager
 ############################################################
-class game_manajer:
+class game_manager:
 	def __init__(self):
 		self.score = 0 # スコア初期化
 		self.counter = 0 # ジャンプディレイ用カウンタ
@@ -205,17 +205,17 @@ class game_manajer:
 		self.floor0 = floor(*self.floor_initials[0])
 		self.floor1 = floor(*self.floor_initials[1])
 		# インスタンス生成ここまで
-		
+
 		pyxel.run(self.update, self.draw)
-		
+
 	def update(self): # 更新
 		self.stage1.update() # game stage 更新
-		
+
 		# 可動物体の更新
 		self.floor_initials[0] = self.floor0.update(*self.floor_initials[0])
 		self.floor_initials[1] = self.floor1.update(*self.floor_initials[1])
 		self.player_initials[0] = self.player.update(*self.player_initials[0])
-		
+
 		self.do_you_hit(0)
 		self.do_you_hit(1)
 
@@ -237,7 +237,7 @@ class game_manajer:
 			self.player_initials[0][6] = True # 接地フラグ
 		else:
 			self.player_initials[0][6] = False
-			
+
 ############################################################
 ### 実行
 ############################################################
