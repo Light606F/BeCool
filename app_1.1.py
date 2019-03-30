@@ -75,32 +75,18 @@ class game_stage:
 ### out
 ############################################################
 class player:
-	def __init__(self, x, y, u, v, jc, jf, g):
-		self.x_coordinate = x # x軸初期位置
-		self.y_coordinate = y # y軸初期位置
-		self.x_axis_vector = u # x軸速度
-		self.y_axis_vector = v # y軸速度
+	def __init__(self):
+		self.x_coordinate = 0 # x軸初期位置
+		self.y_coordinate = 70 # y軸初期位置
+		self.x_axis_vector = 0 # x軸速度
+		self.y_axis_vector = 0 # y軸速度
 
 		self.counter = 0 # ジャンプのディレイ用カウンタ
-		self.jump_counter = jc # ジャンプ回数カウンタ
-		self.isnt_in_jumping = jf # ジャンプフラグ
-		self.on_graund = g # 接地フラグ
+		self.jump_counter = 0 # ジャンプ回数カウンタ
+		self.isnt_in_jumping = True # ジャンプフラグ
+		self.on_graund = False # 接地フラグ
 
-	###############################
-	### update
-	### in 座標，ベクトル，ジャンプカウンタ，ジャンプフラグ，接地フラグ
-	### out 座標，ベクトル，ジャンプカウンタ，ジャンプフラグ，接地フラグ
-	###############################
 	def update(self):
-		# self.x_coordinate = x # 更新後x軸位置
-		# self.y_coordinate = y # 更新後y軸位置
-		# self.x_axis_vector = u # 更新後x軸速度
-		# self.y_axis_vector = v # 更新後y軸速度
-		#
-		# self.jump_counter = jc # ジャンプ回数カウンタ
-		# self.isnt_in_jumping = jf # ジャンプフラグ
-		# self.on_graund = g # 接地フラグ
-
 		self.change_vector()
 		self.jump()
 
@@ -115,8 +101,6 @@ class player:
 			self.jump_counter = 1
 
 		self.y_coordinate += self.y_axis_vector # y軸移動
-
-		return [self.x_coordinate, self.y_coordinate, self.x_axis_vector, self.y_axis_vector, self.jump_counter, self.isnt_in_jumping, self.on_graund]
 
 	def draw(self): # プレイヤーを描画
 		pyxel.blt(self.x_coordinate, self.y_coordinate, 0, 0 if abs(self.x_axis_vector) > 0 else 16, 16, 16, 16, 7)
@@ -193,13 +177,13 @@ class game_manager:
 	def __init__(self):
 		self.score = 0 # スコア初期化
 		self.counter = 0 # ジャンプディレイ用カウンタ
-
+		
 		self.player_initials = [[0, 70, 0, 0, 0, True, False]] # プレイヤーのパラメータ初期値
 		self.floor_initials = [[240 + 16*4, randint(100,160), -5], [240 + (120 + 16*2) + 16*4, randint(100,160), -7]] # 床のパラメータ初期値
 
 		# インスタンス生成
 		self.stage1 = game_stage(0)
-		self.player = player(*self.player_initials[0])
+		self.player = player()
 		self.floor0 = floor(*self.floor_initials[0])
 		self.floor1 = floor(*self.floor_initials[1])
 		# インスタンス生成ここまで
