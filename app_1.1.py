@@ -91,15 +91,15 @@ class player:
 	### in 座標，ベクトル，ジャンプカウンタ，ジャンプフラグ，接地フラグ
 	### out 座標，ベクトル，ジャンプカウンタ，ジャンプフラグ，接地フラグ
 	###############################
-	def update(self, x, y, u, v, jc, jf, g):
-		self.x_coordinate = x # 更新後x軸位置
-		self.y_coordinate = y # 更新後y軸位置
-		self.x_axis_vector = u # 更新後x軸速度
-		self.y_axis_vector = v # 更新後y軸速度
-
-		self.jump_counter = jc # ジャンプ回数カウンタ
-		self.isnt_in_jumping = jf # ジャンプフラグ
-		self.on_graund = g # 接地フラグ
+	def update(self):
+		# self.x_coordinate = x # 更新後x軸位置
+		# self.y_coordinate = y # 更新後y軸位置
+		# self.x_axis_vector = u # 更新後x軸速度
+		# self.y_axis_vector = v # 更新後y軸速度
+		#
+		# self.jump_counter = jc # ジャンプ回数カウンタ
+		# self.isnt_in_jumping = jf # ジャンプフラグ
+		# self.on_graund = g # 接地フラグ
 
 		self.change_vector()
 		self.jump()
@@ -119,9 +119,7 @@ class player:
 		return [self.x_coordinate, self.y_coordinate, self.x_axis_vector, self.y_axis_vector, self.jump_counter, self.isnt_in_jumping, self.on_graund]
 
 	def draw(self): # プレイヤーを描画
-		pyxel.blt(self.x_coordinate, self.y_coordinate,	0,
-			0 if abs(self.x_axis_vector) > 0 else 16,
-			16, 16, 16, 7)
+		pyxel.blt(self.x_coordinate, self.y_coordinate, 0, 0 if abs(self.x_axis_vector) > 0 else 16, 16, 16, 16, 7)
 
 	def change_vector(self): # 速度変更
 		if pyxel.btn(pyxel.KEY_LEFT): # 左加速
@@ -214,7 +212,7 @@ class game_manager:
 		# 可動物体の更新
 		self.floor_initials[0] = self.floor0.update(*self.floor_initials[0])
 		self.floor_initials[1] = self.floor1.update(*self.floor_initials[1])
-		self.player_initials[0] = self.player.update(*self.player_initials[0])
+		self.player.update()
 
 		self.do_you_hit(0)
 		self.do_you_hit(1)
