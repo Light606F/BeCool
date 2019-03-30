@@ -68,6 +68,7 @@ class game_stage:
 
 	def draw(self):
 		pyxel.cls(12) # 水色でスクリーンを初期化
+		pyxel.text(1,1, "JUMP :SPACE\nRIGHT:->\nLEFT :<-", 6)
 
 ############################################################
 ### player object
@@ -177,7 +178,7 @@ class game_manager:
 	def __init__(self):
 		self.score = 0 # スコア初期化
 		self.counter = 0 # ジャンプディレイ用カウンタ
-		
+
 		self.player_initials = [[0, 70, 0, 0, 0, True, False]] # プレイヤーのパラメータ初期値
 		self.floor_initials = [[240 + 16*4, randint(100,160), -5], [240 + (120 + 16*2) + 16*4, randint(100,160), -7]] # 床のパラメータ初期値
 
