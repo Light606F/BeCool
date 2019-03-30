@@ -82,9 +82,7 @@ class player:
 		self.x_axis_vector = 0 # x軸速度
 		self.y_axis_vector = 0 # y軸速度
 
-		self.counter = 0 # ジャンプのディレイ用カウンタ
 		self.jump_counter = 0 # ジャンプ回数カウンタ
-		self.isnt_in_jumping = True # ジャンプフラグ
 		self.on_graund = False # 接地フラグ
 
 	def update(self):
@@ -127,19 +125,11 @@ class player:
 
 	def jump(self): # ジャンプ処理
 		if (
-			pyxel.btn(pyxel.KEY_SPACE)
-			and self.isnt_in_jumping
-			and self.jump_counter < JUMP_COUNT_MAX
-			):
+		pyxel.btnp(pyxel.KEY_SPACE)
+		and self.jump_counter < JUMP_COUNT_MAX
+		):
 			self.y_axis_vector = max(self.y_axis_vector - 12, -12) # ジャンプ力
-			self.isnt_in_jumping = False
-			self.counter = 0
 			self.jump_counter += 1
-
-		if self.counter > 6: # ジャンプディレイ
-			self.isnt_in_jumping = True
-		else:
-			self.counter += 1
 
 ############################################################
 ### floor object
@@ -177,7 +167,6 @@ class floor:
 class game_manager:
 	def __init__(self):
 		self.score = 0 # スコア初期化
-		self.counter = 0 # ジャンプディレイ用カウンタ
 
 		self.player_initials = [[0, 70, 0, 0, 0, True, False]] # プレイヤーのパラメータ初期値
 		self.floor_initials = [[240 + 16*4, randint(100,160), -5], [240 + (120 + 16*2) + 16*4, randint(100,160), -7]] # 床のパラメータ初期値
