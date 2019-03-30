@@ -199,16 +199,16 @@ class game_manager:
 
 	def do_you_hit(self, floor_index): # 当たり判定
 		if (
-			self.player_initials[0][0] + CHARACTOR_WIDTH >= self.floor_initials[floor_index][0] # 右側
-			and self.player_initials[0][0] <= self.floor_initials[floor_index][0] + FLOOR_WIDTH # 左側
-			and self.player_initials[0][1] + CHARACTOR_HIGHT >= self.floor_initials[floor_index][1] # 下側
-			and self.player_initials[0][1] <= self.floor_initials[floor_index][1] + FLOOR_HIGHT # 上側
+			self.player.x_coordinate + CHARACTOR_WIDTH >= self.floor_initials[floor_index][0] # 右側
+			and self.player.x_coordinate <= self.floor_initials[floor_index][0] + FLOOR_WIDTH # 左側
+			and self.player.y_coordinate + CHARACTOR_HIGHT >= self.floor_initials[floor_index][1] # 下側
+			and self.player.y_coordinate <= self.floor_initials[floor_index][1] + FLOOR_HIGHT # 上側
 			):
-			self.player_initials[0][3] = 0 # y軸速度0
-			self.player_initials[0][4] = 0 # ジャンプカウンタ0
-			self.player_initials[0][6] = True # 接地フラグ
+			self.player.y_axis_vector = 0 # y軸速度0
+			self.player.jump_counter = 0 # ジャンプカウンタ0
+			self.player.on_graund = True # 接地フラグ
 		else:
-			self.player_initials[0][6] = False
+			self.player.on_graund = False
 
 ############################################################
 ### 実行
