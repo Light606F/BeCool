@@ -16,8 +16,14 @@ FLOOR_WIDTH = 16*4
 JUMP_COUNT_MAX = 2
 
 imgInf = {
-	"player" : (16, 16, 0, 16, 7),
-	"floor" : (16, 16*4, 0, 0, 7)
+	# (width,height,imgX,imgY,transparentColor)
+	"player" : (16, 16, 0, 16, 7)
+}
+
+mapInf = {
+	# (width,height,imgX,imgY,transparentColor)
+	# width,heightは，タイル(8x8)の数．
+	"floor" : (2*4, 2, 0, 0, 7)
 }
 
 
@@ -202,14 +208,10 @@ class player(movableBody):
 			# self.jump_counter += 1
 
 class floor(movableBody):
-	# get coord
-
-	# set on graund
-
 	def __init__(self, player):
 		coord = (0, 0)
-		initVel = (0, 0)
-		super().__init__(coord, imgInf["floor"], initVel)
+		initVel = (-1, 0)
+		super().__init__(coord, mapInf["floor"], initVel)
 		self._player = player
 
 	def update(self):
