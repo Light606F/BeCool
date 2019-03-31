@@ -126,6 +126,13 @@ class movableBody(body):
 		# 		self.x_axis_vector = 0 # x軸速度
 		# 		self.y_axis_vector = 0 # y軸速度
 
+	def update(self):
+		_updateCoord()
+
+	def _updateCoord(self):
+		self._x += self._vx
+		self._y += self._vy
+
 class player(movableBody):
 	"""docstring for player."""
 
@@ -135,6 +142,8 @@ class player(movableBody):
 		super().__init__(coord, imgInf["player"], initVel)
 
 	def update(self):
+		super().update()
+
 		# ---vvv---左右移動
 		if pyxel.btn(pyxel.KEY_LEFT): # 左加速
 			self._vx = max(self._vx - 0.5 , -2) # 左最大速度
@@ -150,6 +159,9 @@ class player(movableBody):
 	def draw(self):
 		pyxel.blt(self._x, self._y, 0, self._imgX if abs(self._vx) > 0 else self._imgX+16,self._imgY, self._w,self._h, self._transparentColor)
 
+	# get coord
+
+	# set on graund
 
 
 
@@ -167,7 +179,6 @@ class player(movableBody):
 # 		self.on_graund = True # 接地フラグ
 #
 # 	def update(self):
-# 		body()
 # 		self.change_vector()
 # 		self.jump()
 #
