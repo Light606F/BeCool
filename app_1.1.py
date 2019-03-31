@@ -16,7 +16,8 @@ FLOOR_WIDTH = 16*4
 JUMP_COUNT_MAX = 2
 
 imgInf = {
-	"player" : (16,16, 0,16, 7)
+	"player" : (16,16, 0,16, 7),
+	"floor" : (16, 16*4, 0, 0, 7)
 }
 
 
@@ -150,8 +151,18 @@ class player(movableBody):
 	def draw(self):
 		pyxel.blt(self._x, self._y, 0, self._imgX if abs(self._vx) > 0 else self._imgX+16,self._imgY, self._w,self._h, self._transparentColor)
 
+class floor(movableBody):
 
+	def __init__(self):
+		coord = (0, 0)
+		initVel = (0, 0)
+		super().__init__(coord, imgInf["floor"], initVel)
 
+	def update(self)
+		super().update()
+
+	def draw(self):
+		pyxel.bltm(self._x, self._y, 0, self._imgX if abs(self._vx) > 0 else self._imgX+16,self._imgY, self._w,self._h, self._transparentColor)
 
 ############################################################
 ### player object
@@ -236,31 +247,44 @@ class player(movableBody):
 ### in 座標，x軸速度ベクトル
 ### out
 ############################################################
-class floor:
-	def __init__(self, x, y, u):
-		self.x_coordinate = x # x軸初期位置
-		self.y_coordinate = y # y軸初期位置
-		self.x_axis_vector = u # x軸速度
+# class floor:
+	# def __init__(self, x, y, u):
+		# self.x_coordinate = x # x軸初期位置
+		# self.y_coordinate = y # y軸初期位置
+		# self.x_axis_vector = u # x軸速度
 
-	###############################
-	### update
-	### in 座標，x軸速度ベクトル
-	### out 座標，x軸速度ベクトル
-	###############################
-	def update(self, x, y, u):
-		if self.x_coordinate + 16*4 < 0:
-			self.x_coordinate = 240
-			self.y_coordinate = randint(100,160)
-		else:
-			self.x_coordinate += self.x_axis_vector # x軸移動
+	# ###############################
+	# ### update
+	# ### in 座標，x軸速度ベクトル
+	# ### out 座標，x軸速度ベクトル
+	# ###############################
+	# def update(self, x, y, u):
+		# if self.x_coordinate + 16*4 < 0:
+			# self.x_coordinate = 240
+			# self.y_coordinate = randint(100,160)
+		# else:
+			# self.x_coordinate += self.x_axis_vector # x軸移動
 
-		# self.x_axis_vector = - (pyxel.frame_count % 10) # 移動中に速度変更
+		# # self.x_axis_vector = - (pyxel.frame_count % 10) # 移動中に速度変更
 
-		return [self.x_coordinate, self.y_coordinate, self.x_axis_vector]
+		# return [self.x_coordinate, self.y_coordinate, self.x_axis_vector]
 
-	def draw(self):
-		pyxel.bltm(self.x_coordinate, self.y_coordinate, 0, 0, 0, 2*4, 2)
+	# def draw(self):
+		# pyxel.bltm(self.x_coordinate, self.y_coordinate, 0, 0, 0, 2*4, 2)
 
+	# def do_you_hit(self, floor_index): # 当たり判定
+		# if (
+			# self.player.x_coordinate + CHARACTOR_WIDTH >= self.floor_initials[floor_index][0] # 右側
+			# and self.player.x_coordinate <= self.floor_initials[floor_index][0] + FLOOR_WIDTH # 左側
+			# and self.player.y_coordinate + CHARACTOR_HIGHT >= self.floor_initials[floor_index][1] # 下側
+			# and self.player.y_coordinate <= self.floor_initials[floor_index][1] + FLOOR_HIGHT # 上側
+			# ):
+			# self.player.y_axis_vector = 0 # y軸速度0
+			# self.player.jump_counter = 0 # ジャンプカウンタ0
+			# self.player.on_graund = True # 接地フラグ
+		# else:
+			# self.player.on_graund = False
+			
 ############################################################
 ### game manager
 ############################################################
@@ -296,19 +320,6 @@ class game_manager:
 		self.floor0.draw()
 		self.floor1.draw()
 		self.player.draw()
-
-	def do_you_hit(self, floor_index): # 当たり判定
-		if (
-			self.player.x_coordinate + CHARACTOR_WIDTH >= self.floor_initials[floor_index][0] # 右側
-			and self.player.x_coordinate <= self.floor_initials[floor_index][0] + FLOOR_WIDTH # 左側
-			and self.player.y_coordinate + CHARACTOR_HIGHT >= self.floor_initials[floor_index][1] # 下側
-			and self.player.y_coordinate <= self.floor_initials[floor_index][1] + FLOOR_HIGHT # 上側
-			):
-			self.player.y_axis_vector = 0 # y軸速度0
-			self.player.jump_counter = 0 # ジャンプカウンタ0
-			self.player.on_graund = True # 接地フラグ
-		else:
-			self.player.on_graund = False
 
 ############################################################
 ### 実行
