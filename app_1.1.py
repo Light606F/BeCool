@@ -127,7 +127,7 @@ class movableBody(body):
 		# 		self.y_axis_vector = 0 # y軸速度
 
 	def update(self):
-		_updateCoord()
+		self._updateCoord()
 
 	def _updateCoord(self):
 		self._x += self._vx
