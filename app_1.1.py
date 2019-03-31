@@ -137,13 +137,47 @@ class player(movableBody):
 	"""docstring for player."""
 
 	def __init__(self):
-		coord = (0,0)
+		coord = (0, pyxel.height - CHARACTOR_HIGHT)
 		initVel = (0,0)
 		super().__init__(coord, imgInf["player"], initVel)
 
+		# 頭うった時
+		self.onTop = False
+		# Playerの左にオブジェクトがあたった時
+		self.onLeft = False
+		# Playerの右にオブジェクトがあたった時
+		self.onRight = False
+		# オブジェクトの上に来た時，オブジェクトに乗った時，True
+		self.onUnder = True
+
 	def update(self):
 		super().update()
+		self._gravity()
+		self._keyActions()
+		# reset jump_counter
 
+	def draw(self):
+		pyxel.blt(self._x, self._y, 0, self._imgX if abs(self._vx) > 0 else self._imgX+self._w,self._imgY, self._w,self._h, self._transparentColor)
+
+	# ---vvv--- getter ---
+	@property
+	def x(self):
+		return self._x
+	@property
+	def y(self):
+		return self._y
+	# ---^^^--- getter ---
+
+	def _gravity(self):
+		if self.onUnder:
+			self._vy = 0
+		else :
+			# g = 9.80665
+			# self._vy = self._vy + g*0.05
+			self._vy = min(self._vy + 1, 5) # 落下速度の最大値
+			print(self._vy)
+
+	def _keyActions(self):
 		# ---vvv---左右移動
 		if pyxel.btn(pyxel.KEY_LEFT): # 左加速
 			self._vx = max(self._vx - 0.5 , -2) # 左最大速度
@@ -156,14 +190,15 @@ class player(movableBody):
 			self._vx = 0
 		# ---^^^---左右移動
 
-	def draw(self):
-		pyxel.blt(self._x, self._y, 0, self._imgX if abs(self._vx) > 0 else self._imgX+16,self._imgY, self._w,self._h, self._transparentColor)
+		self._jump()
 
-	# get coord
-
-	# set on graund
-
-
+	def _jump(self): # ジャンプ処理
+		if (
+		pyxel.btnp(pyxel.KEY_SPACE)
+		# and self.jump_counter < JUMP_COUNT_MAX
+		):
+			self._vy = max(self._vy - 12, -12) # ジャンプ力
+			# self.jump_counter += 1
 
 ############################################################
 ### player object
@@ -176,7 +211,8 @@ class player(movableBody):
 # 		self.y_axis_vector = 0 # y軸速度
 #
 # 		self.jump_counter = 0 # ジャンプ回数カウンタ
-# 		self.on_graund = True # 接地フラグ
+# 		# self.on_graund = True # 接地フラグ
+#
 #
 # 	def update(self):
 # 		self.change_vector()
@@ -233,14 +269,6 @@ class player(movableBody):
 # 		# else:
 # 		# 	self.y_axis_vector = 0
 # 		# 	# self.y_coordinate = WINDOW_HIGHT - CHARACTOR_HIGHT
-#
-# 	def jump(self): # ジャンプ処理
-# 		if (
-# 		pyxel.btnp(pyxel.KEY_SPACE)
-# 		and self.jump_counter < JUMP_COUNT_MAX
-# 		):
-# 			self.y_axis_vector = max(self.y_axis_vector - 12, -12) # ジャンプ力
-# 			self.jump_counter += 1
 
 ############################################################
 ### floor object
