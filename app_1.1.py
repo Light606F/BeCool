@@ -98,10 +98,7 @@ class body(object):
 
 	def _setCoord(self,coord):
 		# object coordinates
-		self._x = coord[0]
-		self._y = coord[1]
-		# 		self.x_coordinate = 0 # x軸初期位置
-		# 		self.y_coordinate = 70 # y軸初期位置
+		(self._x,self._y) = coord
 
 	def _setImage(self, imgInf):
 		# for image
@@ -117,6 +114,22 @@ class body(object):
 
 	def draw(self):
 		pyxel.blt(self._x, self._y, 0, self._imgX,self._imgY, self._w,self._h, self._transparentColor)
+
+class map(body):
+	"""
+	docstring for map.
+
+	Author : Light606F
+
+	動かないオブジェクトで，イメージにタイルマップを使用しているモノのAbstractなクラス．
+	タイルマップのDrawは表示させる関数が違うから別の使わないといけない．よってこのクラスを作成した．
+	"""
+
+	def __init__(self, coord, imgInf):
+		super().__init__(coord, imgInf)
+
+	def draw(self):
+		pyxel.bltm(self._x, self._y, 0, self._imgX ,self._imgY, self._w,self._h, self._transparentColor)
 
 class movableBody(body):
 	"""
@@ -139,6 +152,23 @@ class movableBody(body):
 	def _updateCoord(self):
 		self._x += self._vx
 		self._y += self._vy
+
+class movableMap(movableBody, map):
+	"""
+	docstring for movableMap.
+
+	Author : Light606F
+
+	動くオブジェクトで，イメージにタイルマップを使用しているモノのAbstractなクラス．
+	WORNING:多重継承．多重継承は危険をはらみます．用法用量を守って使いましょう．
+	"""
+
+	def __init__(self, coord, imgInf, initVel):
+		# 多重継承のため，以下ではmovableBodyのinitしか呼び出せていない．
+		# 今回はそれでいいので，この実装で良い．
+		# movableMap(movableBody, map) こうなっている時の話．Super().initは一番左の引数のInitを呼ぶ．
+		super().__init__(coord, imgInf, initVel)	# movableBodyのinitを呼び出しているよ．
+
 
 class player(movableBody):
 	"""docstring for player."""
@@ -207,10 +237,10 @@ class player(movableBody):
 			self._vy = max(self._vy - 12, -12) # ジャンプ力
 			# self.jump_counter += 1
 
-class floor(movableBody):
+class floor(movableMap):
 	def __init__(self, player):
 		coord = (0, 0)
-		initVel = (-1, 0)
+		initVel = (-3, 0)
 		super().__init__(coord, mapInf["floor"], initVel)
 		self._player = player
 
@@ -220,13 +250,12 @@ class floor(movableBody):
 		if self._x + 16*4 < 0:
 			self._x = 240
 			self._y = randint(100,160)
-		else:
-			self._x += self._vx # x軸移動
+
+		# ここいらないよ． super.update()で動かしてるから，行き過ぎた時にResetするだけでおk． 確認したらこのコメントアウト消しておいてね．
+		# else:
+		# 	self._x += self._vx # x軸移動
 
 		self.doYouHit()
-
-	def draw(self):
-		pyxel.bltm(self._x, self._y, 0, self._imgX ,self._imgY, self._w,self._h, self._transparentColor)
 
 	def doYouHit(self): ### player と floor の当たり判定
 		if ( ### 接地判定
