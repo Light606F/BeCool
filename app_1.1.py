@@ -16,7 +16,7 @@ FLOOR_WIDTH = 16*4
 JUMP_COUNT_MAX = 2
 
 imgInf = {
-	"player" : (16,16, 0,16, 7),
+	"player" : (16, 16, 0, 16, 7),
 	"floor" : (16, 16*4, 0, 0, 7)
 }
 
@@ -127,6 +127,13 @@ class movableBody(body):
 		# 		self.x_axis_vector = 0 # x軸速度
 		# 		self.y_axis_vector = 0 # y軸速度
 
+	def update(self):
+		self._updateCoord()
+
+	def _updateCoord(self):
+		self._x += self._vx
+		self._y += self._vy
+
 class player(movableBody):
 	"""docstring for player."""
 
@@ -136,6 +143,8 @@ class player(movableBody):
 		super().__init__(coord, imgInf["player"], initVel)
 
 	def update(self):
+		super().update()
+
 		# ---vvv---左右移動
 		if pyxel.btn(pyxel.KEY_LEFT): # 左加速
 			self._vx = max(self._vx - 0.5 , -2) # 左最大速度
@@ -151,18 +160,56 @@ class player(movableBody):
 	def draw(self):
 		pyxel.blt(self._x, self._y, 0, self._imgX if abs(self._vx) > 0 else self._imgX+16,self._imgY, self._w,self._h, self._transparentColor)
 
-class floor(movableBody):
 
-	def __init__(self):
+class floor(movableBody):
+	# get coord
+
+	# set on graund
+
+	def __init__(self, player):
 		coord = (0, 0)
 		initVel = (0, 0)
 		super().__init__(coord, imgInf["floor"], initVel)
+		self._player = player
 
 	def update(self)
 		super().update()
+		
+		if self._x + 16*4 < 0:
+			self._x = 240
+			self._y = randint(100,160)
+		else:
+			self._x += self._vx # x軸移動
 
+		self.doYouHit()
+			
 	def draw(self):
-		pyxel.bltm(self._x, self._y, 0, self._imgX if abs(self._vx) > 0 else self._imgX+16,self._imgY, self._w,self._h, self._transparentColor)
+		pyxel.bltm(self._x, self._y, 0, self._imgX ,self._imgY, self._w,self._h, self._transparentColor)
+
+	def doYouHit(self): ### player と floor の当たり判定
+		if ( ### 接地判定
+			self._player.x + CHARACTOR_WIDTH >= self._x # 左側
+			and self._player.x <= self._x + FLOOR_WIDTH # 右側
+			and self._player.y + CHARACTOR_HIGHT >= self._y # 上側
+			and self._player.y <= self._y + FLOOR_HIGHT # 下側
+			):
+			if not self._player.y + CHARACTOR_HIGHT >= self._y : ### 上側接触
+				self._player.onUnder = True # y軸速度最大で0に
+
+			elif not self._player.y >= self._y + FLOOR_HIGHT : ### 下側接触
+				self._player.onTop = True # y軸速度最小で0に
+
+			elif not self._player.x >= self._x + FLOOR_WIDTH : ### 右側接触
+				self._player.onLeft = True  # x軸速度を max(floor, player)
+
+			elif not self._player.x + CHARACTOR_WIDTH <= self._x: ### 左側接触
+				self._player.onRight = True  # x軸速度を min(floor, player)
+
+		else: ### 非接地で接地フラグを False に
+			self._player.onUnder = False
+			self._player.onTop = False
+			self._player.onRight = False
+			self._player.onLeft = False
 
 ############################################################
 ### player object
@@ -178,7 +225,6 @@ class floor(movableBody):
 # 		self.on_graund = True # 接地フラグ
 #
 # 	def update(self):
-# 		body()
 # 		self.change_vector()
 # 		self.jump()
 #
@@ -298,8 +344,8 @@ class game_manager:
 		# インスタンス生成
 		self.stage1 = game_stage(0)
 		self.player = player()
-		self.floor0 = floor(*self.floor_initials[0])
-		self.floor1 = floor(*self.floor_initials[1])
+		self.floor0 = floor(self.player)
+		self.floor1 = floor(self.player)
 		# インスタンス生成ここまで
 
 		pyxel.run(self.update, self.draw)
@@ -311,6 +357,7 @@ class game_manager:
 		# self.floor_initials[0] = self.floor0.update(*self.floor_initials[0])
 		# self.floor_initials[1] = self.floor1.update(*self.floor_initials[1])
 		self.player.update()
+		self.floor0.update()
 
 		# self.do_you_hit(0)
 		# self.do_you_hit(1)
