@@ -23,7 +23,8 @@ imgInf = {
 mapInf = {
 	# (width,height,imgX,imgY,transparentColor)
 	# width,heightは，タイル(8x8)の数．
-	"floor" : (2*4, 2, 0, 0, 7)
+	"floor" : (2*4, 2, 0, 0, 7),
+	"ground" : (2*16, 2, 0, 0, 7)
 }
 
 
@@ -112,6 +113,15 @@ class body(object):
 		## transparent color in this image
 		self._transparentColor = tc
 
+	# ---vvv--- getter and setter ---
+	@property
+	def x(self):
+		return self._x
+	@property
+	def y(self):
+		return self._y
+	# ---^^^--- getter and setter ---
+
 	def draw(self):
 		pyxel.blt(self._x, self._y, 0, self._imgX,self._imgY, self._w,self._h, self._transparentColor)
 
@@ -169,12 +179,11 @@ class movableMap(movableBody, map):
 		# movableMap(movableBody, map) こうなっている時の話．Super().initは一番左の引数のInitを呼ぶ．
 		super().__init__(coord, imgInf, initVel)	# movableBodyのinitを呼び出しているよ．
 
-
 class player(movableBody):
 	"""docstring for player."""
 
 	def __init__(self):
-		coord = (0, pyxel.height - CHARACTOR_HIGHT)
+		coord = (0, pyxel.height - CHARACTOR_HIGHT*2)
 		initVel = (0,0)
 		super().__init__(coord, imgInf["player"], initVel)
 
@@ -185,34 +194,41 @@ class player(movableBody):
 		# Playerの右にオブジェクトがあたった時
 		self.onRight = False
 		# オブジェクトの上に来た時，オブジェクトに乗った時，True
-		self.onUnder = True
+		self._onUnder = True
 
 	def update(self):
+		self._gravity()	# vyをOnUnderとかを見て書き換えてから，updateCoordする必要があるので，GravityはUpdateよりも上．
+		self._keyActions()	# Keyを押したそのフレームで動いてほしいので，KeyActionsはUpdateよりも上．
 		super().update()
-		self._gravity()
-		self._keyActions()
 		# reset jump_counter
 
 	def draw(self):
+		print(str(pyxel.frame_count) + " : Draw player")
 		pyxel.blt(self._x, self._y, 0, self._imgX if abs(self._vx) > 0 else self._imgX+self._w,self._imgY, self._w,self._h, self._transparentColor)
 
-	# ---vvv--- getter ---
-	@property
-	def x(self):
-		return self._x
-	@property
-	def y(self):
-		return self._y
-	# ---^^^--- getter ---
+	# ---vvv--- getter and setter ---
+	def lowerEndOnObj(self, flag, obj):
+		# 衝突したら，FlagにTrue，Objに衝突したオブジェクトを渡す．
+		self._onUnder = flag
+		self._collidedObj = obj
+	# ---^^^--- getter and setter ---
 
 	def _gravity(self):
-		if self.onUnder:
-			self._vy = 0
+		if self._onUnder:
+			# print("SET GRAVITY ZERO")めり込まない処理
+			self._vy = 0	# TODO : まっつんがいってたやつ． 最小どうのっていうやつ．
+
+			# めり込まない処理
+			# 選択肢1 : めり込んだ分を戻す． どれくらいめり込んだか か，あたったオブジェクトをもらう必要がある．
+			# -> 選択肢2 : あたった物体の上に座標を設定する． あたったオブジェクトをもらう必要がある．
+			self._y = self._collidedObj.y - self._h
+			print(str(pyxel.frame_count) + " : set coord on obj")
+
 		else :
 			# g = 9.80665
 			# self._vy = self._vy + g*0.05
 			self._vy = min(self._vy + 1, 5) # 落下速度の最大値
-			print(self._vy)
+			# print(self._vy)
 
 	def _keyActions(self):
 		# ---vvv---左右移動
@@ -236,6 +252,57 @@ class player(movableBody):
 		):
 			self._vy = max(self._vy - 12, -12) # ジャンプ力
 			# self.jump_counter += 1
+
+class ground(map):
+	"""
+	docstring for ground.
+
+	Author : Light606F
+
+	THE 床.
+	今は単色で作るけど，地面に色つけるなりなんなりして，動いてる感出すこともできる．
+	"""
+
+	def __init__(self, player):
+		coord = (0,pyxel.height-CHARACTOR_HIGHT)
+		super().__init__(coord, mapInf["ground"])
+		self._player = player
+
+	def update(self):
+		self.doYouHit()
+
+	def doYouHit(self): ### player と floor の当たり判定
+		# print("Enter doYouHit")
+		if ( ### 接地判定
+			self._player.x + CHARACTOR_WIDTH >= self._x # 左側
+			and self._player.x <= self._x + FLOOR_WIDTH # 右側
+			and self._player.y + CHARACTOR_HIGHT >= self._y #-1 # groundの上端より下に，Playerの下端がある場合．
+			and self._player.y <= self._y + FLOOR_HIGHT # 下側
+			):
+			# print("Hit!")
+			if self._player.y + CHARACTOR_HIGHT >= self._y : ### 上側接触
+				self._player.lowerEndOnObj(True,self)
+				# self._player.onUnder = True # y軸速度最大で0に
+				print(str(pyxel.frame_count) + " : under!")
+
+			elif self._player.y >= self._y + FLOOR_HIGHT : ### 下側接触
+				self._player.onTop = True # y軸速度最小で0に
+				print("top!")
+
+			elif self._player.x >= self._x + FLOOR_WIDTH : ### 右側接触
+				self._player.onLeft = True  # x軸速度を max(floor, player)
+				print("TTTT!")
+
+			elif self._player.x + CHARACTOR_WIDTH <= self._x: ### 左側接触
+				self._player.onRight = True  # x軸速度を min(floor, player)
+				print("TTTT!")
+
+		else: ### 非接地で接地フラグを False に
+			print("OFF!")
+			self._player.lowerEndOnObj(False,self)
+			self._player.onTop = False
+			self._player.onRight = False
+			self._player.onLeft = False
 
 class floor(movableMap):
 	def __init__(self, player):
@@ -263,6 +330,7 @@ class floor(movableMap):
 			and self._player.x <= self._x + FLOOR_WIDTH # 右側
 			and self._player.y + CHARACTOR_HIGHT >= self._y # 上側
 			and self._player.y <= self._y + FLOOR_HIGHT # 下側
+			#TODO +1しないとちょうど接触してる時が含めていないかな？
 			):
 			if not self._player.y + CHARACTOR_HIGHT >= self._y : ### 上側接触
 				self._player.onUnder = True # y軸速度最大で0に
@@ -277,6 +345,7 @@ class floor(movableMap):
 				self._player.onRight = True  # x軸速度を min(floor, player)
 
 		else: ### 非接地で接地フラグを False に
+			#TODO ここに自身が接触してるなら，のIFがいる．
 			self._player.onUnder = False
 			self._player.onTop = False
 			self._player.onRight = False
@@ -295,7 +364,6 @@ class floor(movableMap):
 # 		self.jump_counter = 0 # ジャンプ回数カウンタ
 # 		# self.on_graund = True # 接地フラグ
 #
-#
 # 	def update(self):
 # 		self.change_vector()
 # 		self.jump()
@@ -312,45 +380,6 @@ class floor(movableMap):
 # 			self.jump_counter = 1
 #
 # 		self.y_coordinate += self.y_axis_vector # y軸移動
-#
-# 	def draw(self): # プレイヤーを描画
-# 		pyxel.blt(self.x_coordinate, self.y_coordinate, 0, 0 if abs(self.x_axis_vector) > 0 else 16, 16, 16, 16, 7)
-#
-# 	def change_vector(self): # 速度変更
-# 		# ---vvv---左右移動
-# 		if pyxel.btn(pyxel.KEY_LEFT): # 左加速
-# 			self.x_axis_vector = max(self.x_axis_vector - 0.5 , -2) # 左最大速度
-# 		if pyxel.btnr(pyxel.KEY_LEFT): # キーを離したら vector をリセット
-# 			self.x_axis_vector = 0
-#
-# 		if pyxel.btn(pyxel.KEY_RIGHT): # 右加速
-# 			self.x_axis_vector = min(self.x_axis_vector + 0.5 , 2) # 右最大速度 右画面端までしかいかない
-# 		if pyxel.btnr(pyxel.KEY_RIGHT): # キーを離したら vector をリセット
-# 			self.x_axis_vector = 0
-# 		# ---^^^---左右移動
-#
-# 		if self.on_graund:
-# 			self.y_axis_vector = 0
-# 		else :
-# 			# g = 9.80665
-# 			# self.y_axis_vector = self.y_axis_vector + g*0.05
-# 			self.y_axis_vector = min(self.y_axis_vector + 1, 5) # 落下速度の最大値
-# 			print(self.y_axis_vector)
-#
-# 		# if self.y_coordinate < WINDOW_HIGHT - CHARACTOR_HIGHT:
-# 		# 	# 画面下までいったらだめ
-# 		# 	# でもこれじゃ埋まっちゃう．
-# 		#
-# 		# 	if self.on_graund:
-# 		# 		self.y_axis_vector = 0
-# 		# 	else :
-# 		# 		# g = 9.80665
-# 		# 		# self.y_axis_vector = self.y_axis_vector + g*0.05
-# 		# 		self.y_axis_vector = min(self.y_axis_vector + 1, 5) # 落下速度の最大値
-# 		# 		print(self.y_axis_vector)
-# 		# else:
-# 		# 	self.y_axis_vector = 0
-# 		# 	# self.y_coordinate = WINDOW_HIGHT - CHARACTOR_HIGHT
 
 ############################################################
 ### floor object
@@ -402,35 +431,39 @@ class game_manager:
 	def __init__(self):
 		self.score = 0 # スコア初期化
 
-		self.player_initials = [[0, 70, 0, 0, 0, True, False]] # プレイヤーのパラメータ初期値
-		self.floor_initials = [[240 + 16*4, randint(100,160), -5], [240 + (120 + 16*2) + 16*4, randint(100,160), -7]] # 床のパラメータ初期値
+		# self.floor_initials = [[240 + 16*4, randint(100,160), -5], [240 + (120 + 16*2) + 16*4, randint(100,160), -7]] # 床のパラメータ初期値
 
 		# インスタンス生成
 		self.stage1 = game_stage(0)
 		self.player = player()
-		self.floor0 = floor(self.player)
-		self.floor1 = floor(self.player)
+		self.ground = ground(self.player)
+		# self.floor0 = floor(self.player)
+		# self.floor1 = floor(self.player)
 		# インスタンス生成ここまで
 
 		pyxel.run(self.update, self.draw)
 
 	def update(self): # 更新
+		# print(str(pyxel.frame_count) + " : game_manager update")
+
+		# for DEBUG
+		# if pyxel.btnp(pyxel.KEY_W):
+
 		self.stage1.update() # game stage 更新
 
 		# 可動物体の更新
-		# self.floor_initials[0] = self.floor0.update(*self.floor_initials[0])
-		# self.floor_initials[1] = self.floor1.update(*self.floor_initials[1])
-		self.player.update()
-		self.floor0.update()
-
-		# self.do_you_hit(0)
-		# self.do_you_hit(1)
+		self.ground.update()
+		# self.floor0.update()
+		self.player.update()	# オブジェクトがPlayerに接触した際，そのオブジェクトをPlayerに渡しておいて貰わないといけないため，Playerの更新は，すべてのオブジェクトの後．
 
 	def draw(self): # 描画
+		# print(str(pyxel.frame_count) + " : game_manager draw")
+
 		self.stage1.draw()
-		self.floor0.draw()
-		self.floor1.draw()
+		self.ground.draw()
 		self.player.draw()
+		# self.floor0.draw()
+		# self.floor1.draw()
 
 ############################################################
 ### 実行
