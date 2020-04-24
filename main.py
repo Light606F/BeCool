@@ -16,6 +16,13 @@ class obj():
 		self.tileX = x
 		self.tileY = y
 
+	def draw(self):
+		pyxel.blt(
+			self.x, self.y,
+			0,
+			self.tileX, self.tileY,
+			TileSize, TileSize)
+
 
 class Charactor(obj):
 	"""docstring for Charactor."""
@@ -33,7 +40,7 @@ class Charactor(obj):
 			self.x = min( self.x+2, DisplayWidth-TileSize )
 
 		if pyxel.btn(pyxel.KEY_LEFT):
-			self.x = max( self.x-2, DisplayWidth-TileSize )
+			self.x = max( self.x-2, 0 )
 
 		if self.y < DisplayHeight-TileSize*2:
 			self.y +=1
@@ -46,6 +53,14 @@ class Floor(obj):
 		super().__init__()
 		self.y = DisplayHeight-TileSize
 		self._setTile(8, 0)
+
+	def draw(self):
+		for i in range(0, DisplayWidth, TileSize):
+			pyxel.blt(
+				i, self.y,
+				0,
+				self.tileX, self.tileY,
+				TileSize, TileSize)
 
 
 class App:
@@ -68,22 +83,7 @@ class App:
 		pyxel.cls(7)
 		pyxel.text(55, 41, "Hello, Pyxel!", pyxel.frame_count % 16)
 
-		def drawPlayer():
-			pyxel.blt(
-				self.playerChr.x, self.playerChr.y,
-				0,
-				self.playerChr.tileX, self.playerChr.tileY,
-				TileSize, TileSize)
-
-		def drawFloor():
-			for i in range(0, DisplayWidth, TileSize):
-				pyxel.blt(
-					i, self.floor.y,
-					0,
-					self.floor.tileX, self.floor.tileY,
-					TileSize, TileSize)
-
-		drawFloor()
-		drawPlayer()
+		self.floor.draw()
+		self.playerChr.draw()
 
 App()
