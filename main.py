@@ -1,4 +1,5 @@
 import pyxel
+import random
 
 DisplayWidth = 160
 DisplayHeight = 120
@@ -17,11 +18,12 @@ class obj():
 		self.tileY = y
 
 	def draw(self):
+		transClr = 2
 		pyxel.blt(
 			self.x, self.y,
 			0,
 			self.tileX, self.tileY,
-			TileSize, TileSize)
+			TileSize, TileSize, transClr)
 
 
 class Charactor(obj):
@@ -47,7 +49,7 @@ class Charactor(obj):
 
 
 class Floor(obj):
-	"""docstring for Charactor."""
+	"""docstring for Floor."""
 
 	def __init__(self):
 		super().__init__()
@@ -63,10 +65,25 @@ class Floor(obj):
 				TileSize, TileSize)
 
 
+class Obstacle(obj):
+	"""docstring for Obstacle."""
+
+	def __init__(self):
+		super().__init__()
+		rnd = random.randint(2,4)
+		self.x = DisplayWidth-TileSize
+		self.y = DisplayHeight-TileSize*rnd
+		self._setTile(40, 0)
+
+	def update(self):
+		self.x -= 1
+
+
 class App:
 	def __init__(self):
 		self.playerChr = Charactor()
 		self.floor = Floor()
+		self.obstacle = Obstacle()
 
 		pyxel.init(DisplayWidth, DisplayHeight, caption="Zero One")
 		pyxel.load("assets/assets.pyxres")
@@ -77,6 +94,9 @@ class App:
 		if pyxel.btnp(pyxel.KEY_Q):
 			pyxel.quit()
 
+		if self.obstacle.x < 0:
+			self.obstacle = Obstacle()
+		self.obstacle.update()
 		self.playerChr.update()
 
 	def draw(self):
@@ -84,6 +104,7 @@ class App:
 		pyxel.text(55, 41, "Hello, Pyxel!", pyxel.frame_count % 16)
 
 		self.floor.draw()
+		self.obstacle.draw()
 		self.playerChr.draw()
 
 App()
