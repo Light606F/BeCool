@@ -11,7 +11,7 @@ class Obj():
 	def __init__(self):
 		self.x = 0
 		self.y = 0
-		self.high = TILE_SIZE
+		self.height = TILE_SIZE
 		self.width = TILE_SIZE
 		self._setTile(0,0)
 
@@ -34,10 +34,10 @@ class Charactor(Obj):
 	def __init__(self):
 		super().__init__()
 		self.y = DisplayHeight-TILE_SIZE*2
-		self.high = TILE_SIZE-1
+		self.height = TILE_SIZE-1
 		self.width = TILE_SIZE-1
 		self._setTile(0, 16)
-		self.SPEED = 1
+		self.SPEED = 2
 
 	def update(self):
 		if pyxel.btn(pyxel.KEY_UP):
@@ -54,8 +54,14 @@ class Charactor(Obj):
 			self.y +=1
 
 	def collision(self, obj):
-		if self.x+self.width-1 >= obj.x and obj.x+obj.width-1 >= self.x:
-			pyxel.text(0, 0, "HIT!", 8)
+		xRightEnd = self.x+self.width-1
+		objXRightEnd = obj.x+obj.width-1
+		yBottomEnd = self.y+self.height-1
+		objYBottomEnd = obj.y+obj.height-1
+
+		if xRightEnd >= obj.x and objXRightEnd >= self.x:
+			if yBottomEnd >= obj.y and objYBottomEnd >= self.y:
+				pyxel.text(0, 0, "HIT!", 8)
 
 
 class Floor(Obj):
