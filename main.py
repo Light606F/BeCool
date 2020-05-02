@@ -3,14 +3,16 @@ import random
 
 DisplayWidth = 160
 DisplayHeight = 120
-TileSize = 8
+TILE_SIZE = 8
 
-class obj():
-	"""docstring for obj."""
+class Obj():
+	"""docstring for Obj."""
 
 	def __init__(self):
 		self.x = 0
 		self.y = 0
+		self.high = TILE_SIZE
+		self.width = TILE_SIZE
 		self._setTile(0,0)
 
 	def _setTile(self, x, y):
@@ -23,56 +25,64 @@ class obj():
 			self.x, self.y,
 			0,
 			self.tileX, self.tileY,
-			TileSize, TileSize, transClr)
+			TILE_SIZE, TILE_SIZE, transClr)
 
 
-class Charactor(obj):
+class Charactor(Obj):
 	"""docstring for Charactor."""
 
 	def __init__(self):
 		super().__init__()
-		self.y = DisplayHeight-TileSize*2
+		self.y = DisplayHeight-TILE_SIZE*2
+		self.high = TILE_SIZE-1
+		self.width = TILE_SIZE-1
 		self._setTile(0, 16)
+		self.SPEED = 1
 
 	def update(self):
 		if pyxel.btn(pyxel.KEY_UP):
 			self.y -= 2
 
 		if pyxel.btn(pyxel.KEY_RIGHT):
-			self.x = min( self.x+2, DisplayWidth-TileSize )
+			self.x = min( self.x+self.SPEED, DisplayWidth-TILE_SIZE )
 
 		if pyxel.btn(pyxel.KEY_LEFT):
-			self.x = max( self.x-2, 0 )
+			self.x = max( self.x-self.SPEED, 0 )
 
-		if self.y < DisplayHeight-TileSize*2:
+		# if upper then floor
+		if self.y+self.width < DisplayHeight-TILE_SIZE:
 			self.y +=1
 
+	def collision(self, obj):
+		if self.x+self.width-1 >= obj.x and obj.x+obj.width-1 >= self.x:
+			pyxel.text(0, 0, "HIT!", 8)
 
-class Floor(obj):
+
+class Floor(Obj):
 	"""docstring for Floor."""
 
 	def __init__(self):
 		super().__init__()
-		self.y = DisplayHeight-TileSize
+		self.y = DisplayHeight-TILE_SIZE
 		self._setTile(8, 0)
 
 	def draw(self):
-		for i in range(0, DisplayWidth, TileSize):
+		for i in range(0, DisplayWidth, TILE_SIZE):
 			pyxel.blt(
 				i, self.y,
 				0,
 				self.tileX, self.tileY,
-				TileSize, TileSize)
+				TILE_SIZE, TILE_SIZE)
 
 
-class Obstacle(obj):
+class Obstacle(Obj):
 	"""docstring for Obstacle."""
 
 	def __init__(self):
 		super().__init__()
 		rnd = random.randint(2,4)
-		self.x = DisplayWidth-TileSize
-		self.y = DisplayHeight-TileSize*rnd
+		self.x = DisplayWidth-TILE_SIZE
+		self.y = DisplayHeight-TILE_SIZE*rnd
 		self._setTile(40, 0)
 
 	def update(self):
@@ -99,6 +109,9 @@ class App:
 		self.obstacle.update()
 		self.playerChr.update()
 
+		# # Collision
+		# self.playerChr.collision(self.obstacle)
+
 	def draw(self):
 		pyxel.cls(7)
 		pyxel.text(55, 41, "Hello, Pyxel!", pyxel.frame_count % 16)
@@ -106,5 +119,8 @@ class App:
 		self.floor.draw()
 		self.obstacle.draw()
 		self.playerChr.draw()
+
+		# Collision
+		self.playerChr.collision(self.obstacle)
 
 App()
