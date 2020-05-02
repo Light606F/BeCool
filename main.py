@@ -54,13 +54,17 @@ class Charactor(Obj):
 			self.y +=1
 
 	def collision(self, obj):
-		xRightEnd = self.x+self.width-1
-		objXRightEnd = obj.x+obj.width-1
-		yBottomEnd = self.y+self.height-1
-		objYBottomEnd = obj.y+obj.height-1
+		selfXStart = self.x
+		selfYStart = self.y
+		selfXEnd = self.x+self.width-1
+		selfYEnd = self.y+self.height-1
+		objXStart = obj.x
+		objYStart = obj.y
+		objXEnd = obj.x+obj.width-1
+		objYEnd = obj.y+obj.height-1
 
-		if xRightEnd >= obj.x and objXRightEnd >= self.x:
-			if yBottomEnd >= obj.y and objYBottomEnd >= self.y:
+		if selfXEnd >= objXStart and objXEnd >= selfXStart:
+			if selfYEnd >= objYStart and objYEnd >= selfYStart:
 				pyxel.text(0, 0, "HIT!", 8)
 
 
