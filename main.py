@@ -4,6 +4,8 @@ import random
 DisplayWidth = 160
 DisplayHeight = 120
 TILE_SIZE = 8
+TEXT_HEIGHT = 5
+TEXT_WIDTH = 3
 
 class Obj():
 	"""docstring for Obj."""
@@ -39,6 +41,8 @@ class Charactor(Obj):
 		self._setTile(0, 16)
 		self.SPEED = 2
 
+		self.death = False
+
 	def update(self):
 		if pyxel.btn(pyxel.KEY_UP):
 			self.y -= 2
@@ -65,7 +69,7 @@ class Charactor(Obj):
 
 		if selfXEnd >= objXStart and objXEnd >= selfXStart:
 			if selfYEnd >= objYStart and objYEnd >= selfYStart:
-				pyxel.text(0, 0, "HIT!", 8)
+				self.death = True
 
 
 class Floor(Obj):
@@ -101,6 +105,7 @@ class Obstacle(Obj):
 
 class App:
 	def __init__(self):
+		self.state = "start"
 		self.playerChr = Charactor()
 		self.floor = Floor()
 		self.obstacle = Obstacle()
@@ -114,23 +119,57 @@ class App:
 		if pyxel.btnp(pyxel.KEY_Q):
 			pyxel.quit()
 
-		if self.obstacle.x < 0:
-			self.obstacle = Obstacle()
-		self.obstacle.update()
-		self.playerChr.update()
+		if self.state=="start":
+			if pyxel.btnp(pyxel.KEY_SPACE):
+				self.state = "main"
+		elif self.state=="main":
+			if self.obstacle.x < 0:
+				self.obstacle = Obstacle()
+			self.obstacle.update()
+			self.playerChr.update()
 
-		# # Collision
-		# self.playerChr.collision(self.obstacle)
+			# Collision
+			self.playerChr.collision(self.obstacle)
+
+			if self.playerChr.death:
+				self.state = "gameOver"
+		elif self.state=="gameOver":
+			if pyxel.btnp(pyxel.KEY_R):
+				self.playerChr.__init__()
+				self.obstacle.__init__()
+				self.state = "main"
 
 	def draw(self):
+		# background
 		pyxel.cls(7)
-		pyxel.text(55, 41, "Hello, Pyxel!", pyxel.frame_count % 16)
 
-		self.floor.draw()
-		self.obstacle.draw()
-		self.playerChr.draw()
+		if self.state=="start":
+			self.printTextCenter(DisplayHeight/2-TEXT_HEIGHT/2-10, "ZERO ONE", pyxel.frame_count % 16)
+			self.printTextCenter(DisplayHeight/2+TEXT_HEIGHT/2-10+1, "Press SPACE", 0)
+			# self.printCenter()
 
-		# Collision
-		self.playerChr.collision(self.obstacle)
+		elif self.state=="main":
+			pyxel.text(55, 41, "Hello, Pyxel!", pyxel.frame_count % 16)
 
-App()
+			self.floor.draw()
+			self.obstacle.draw()
+			self.playerChr.draw()
+
+			# Collision
+			if self.playerChr.death:
+				pyxel.text(0, 0, "HIT!", 8)
+		elif self.state=="gameOver":
+			self.printTextCenter(DisplayHeight/2-TEXT_HEIGHT/2-10, "GAME OVER", 0)
+			self.printTextCenter(DisplayHeight/2+TEXT_HEIGHT/2-10+1, "Press R to RESTART", 0)
+
+	def printTextCenter(self, height, text, col):
+		x = DisplayWidth/2 - len(text)/2*TEXT_WIDTH
+		pyxel.text(x, height, text, col)
+
+	def printCenter(self):
+		pyxel.line(DisplayWidth/2,0,DisplayWidth/2,DisplayHeight, 8)
+		pyxel.line(0,DisplayHeight/2,DisplayWidth,DisplayHeight/2, 8)
+
+
+if __name__ == "__main__":
+	App()
