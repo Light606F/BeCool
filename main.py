@@ -80,10 +80,10 @@ class Charactor(Obj):
 			elif pyxel.btn(pyxel.KEY_DOWN):
 				if self.y+self.width-1 < DisplayHeight-TILE_SIZE -1:
 					self.y += 1
-			if pyxel.btn(pyxel.KEY_LEFT):
-				self.x -= 1
-			elif pyxel.btn(pyxel.KEY_RIGHT):
-				self.x += 1
+			# if pyxel.btn(pyxel.KEY_LEFT):
+			# 	self.x -= 1
+			# elif pyxel.btn(pyxel.KEY_RIGHT):
+			# 	self.x += 1
 
 	def collision(self, obj):
 		selfXStart = self.x
@@ -125,13 +125,18 @@ class Ceiling(Obj):
 		self.y = DisplayHeight-TILE_SIZE*5
 		self._setTile(24, 0)
 
+		self.startPoint = 0
+
 	def draw(self):
-		for i in range(0, DisplayWidth, TILE_SIZE):
+		for i in range(self.startPoint, DisplayWidth+TILE_SIZE, TILE_SIZE):
 			pyxel.blt(
 				i, self.y,
 				0,
 				self.tileX, self.tileY,
 				TILE_SIZE, TILE_SIZE)
+		self.startPoint -=1
+		if self.startPoint > TILE_SIZE:
+			self.startPoint = 0
 
 
 class Obstacle(Obj):
