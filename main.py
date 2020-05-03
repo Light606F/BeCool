@@ -44,21 +44,46 @@ class Charactor(Obj):
 		self.death = False
 
 	def update(self):
-		if pyxel.btn(pyxel.KEY_UP):
-			if self.y > DisplayHeight-TILE_SIZE*4:
-				self.y -= 2
-			else:
-				self.y -= 1
+		prevY = self.y
+		GRAVITY = 1
 
-		if pyxel.btn(pyxel.KEY_RIGHT):
-			self.x = min( self.x+self.SPEED, DisplayWidth-TILE_SIZE )
+		if not pyxel.btn(pyxel.KEY_SPACE):
+			# USUAL
 
-		if pyxel.btn(pyxel.KEY_LEFT):
-			self.x = max( self.x-self.SPEED, 0 )
+			if pyxel.btn(pyxel.KEY_UP):
+				if self.y > DisplayHeight-TILE_SIZE*4:
+					self.y -= GRAVITY + 2
+				else:
+					self.y = DisplayHeight-TILE_SIZE*4
+					# anti gravity
+					self.y -= GRAVITY
 
-		# if upper then floor
-		if self.y+self.width < DisplayHeight-TILE_SIZE:
-			self.y +=1
+			# if upper then floor
+			if self.y+self.width-1 < DisplayHeight-TILE_SIZE -1:
+				# gravity
+				self.y += GRAVITY
+
+			if pyxel.btn(pyxel.KEY_LEFT):
+				self.x = max( self.x-self.SPEED, 0 )
+
+			elif pyxel.btn(pyxel.KEY_RIGHT):
+				self.x = min( self.x+self.SPEED, DisplayWidth-TILE_SIZE )
+
+		else:
+			# if press SPACE key
+
+			self.y = prevY
+
+			if pyxel.btn(pyxel.KEY_UP):
+				if self.y > DisplayHeight-TILE_SIZE*4:
+					self.y -= 1
+			elif pyxel.btn(pyxel.KEY_DOWN):
+				if self.y+self.width-1 < DisplayHeight-TILE_SIZE -1:
+					self.y += 1
+			if pyxel.btn(pyxel.KEY_LEFT):
+				self.x -= 1
+			elif pyxel.btn(pyxel.KEY_RIGHT):
+				self.x += 1
 
 	def collision(self, obj):
 		selfXStart = self.x
@@ -163,10 +188,10 @@ class App:
 		## create
 		# Ensure space to move player
 		self.countFromCreateObs +=1
-		if self.countFromCreateObs > TILE_SIZE + TILE_SIZE + 6:
+		if self.countFromCreateObs > TILE_SIZE + TILE_SIZE + 10:
 			# create or not
 			rnd = random.random()
-			if rnd < 0.1:
+			if rnd < 0.05:
 				# if create
 				# how many 1or2
 				num = random.randint(1,2)
@@ -183,13 +208,19 @@ class App:
 					exit(1)
 				self.countFromCreateObs = 0
 
-		## remove
+		## update & prepare remove
+		obsRm = []
 		for o in self.obstacles:
 			if o.x < 0:
-				self.obstacles.remove(o)
+				obsRm.append(o)
+				continue
 
 			## update
 			o.update()
+
+		## remove
+		for o in obsRm:
+			self.obstacles.remove(o)
 
 		# player
 		self.playerChr.update()
@@ -208,6 +239,7 @@ class App:
 			# self.printCenter()
 
 		elif self.state=="main":
+			pyxel.text(1,1, "ARROW KEY : move\nSPACE : stop", 0)
 			pyxel.text(55, 41, "Hello, Pyxel!", pyxel.frame_count % 16)
 
 			self.floor.draw()
