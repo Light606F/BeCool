@@ -45,7 +45,10 @@ class Charactor(Obj):
 
 	def update(self):
 		if pyxel.btn(pyxel.KEY_UP):
-			self.y -= 2
+			if self.y > DisplayHeight-TILE_SIZE*4:
+				self.y -= 2
+			else:
+				self.y -= 1
 
 		if pyxel.btn(pyxel.KEY_RIGHT):
 			self.x = min( self.x+self.SPEED, DisplayWidth-TILE_SIZE )
@@ -89,6 +92,23 @@ class Floor(Obj):
 				TILE_SIZE, TILE_SIZE)
 
 
+class Ceiling(Obj):
+	"""docstring for Ceiling."""
+
+	def __init__(self):
+		super().__init__()
+		self.y = DisplayHeight-TILE_SIZE*5
+		self._setTile(24, 0)
+
+	def draw(self):
+		for i in range(0, DisplayWidth, TILE_SIZE):
+			pyxel.blt(
+				i, self.y,
+				0,
+				self.tileX, self.tileY,
+				TILE_SIZE, TILE_SIZE)
+
+
 class Obstacle(Obj):
 	"""docstring for Obstacle."""
 
@@ -108,6 +128,7 @@ class App:
 		self.state = "start"
 		self.playerChr = Charactor()
 		self.floor = Floor()
+		self.ceiling = Ceiling()
 		self.obstacle = Obstacle()
 
 		pyxel.init(DisplayWidth, DisplayHeight, caption="Zero One")
@@ -152,12 +173,13 @@ class App:
 			pyxel.text(55, 41, "Hello, Pyxel!", pyxel.frame_count % 16)
 
 			self.floor.draw()
+			self.ceiling.draw()
 			self.obstacle.draw()
 			self.playerChr.draw()
 
-			# Collision
-			if self.playerChr.death:
-				pyxel.text(0, 0, "HIT!", 8)
+			# # Collision
+			# if self.playerChr.death:
+			# 	pyxel.text(0, 0, "HIT!", 8)
 		elif self.state=="gameOver":
 			self.printTextCenter(DisplayHeight/2-TEXT_HEIGHT/2-10, "GAME OVER", 0)
 			self.printTextCenter(DisplayHeight/2+TEXT_HEIGHT/2-10+1, "Press R to RESTART", 0)
