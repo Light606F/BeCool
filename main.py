@@ -112,25 +112,30 @@ class Ceiling(Obj):
 class Obstacle(Obj):
 	"""docstring for Obstacle."""
 
-	def __init__(self):
+	def __init__(self, high):
 		super().__init__()
-		rnd = random.randint(2,4)
 		self.x = DisplayWidth-TILE_SIZE
-		self.y = DisplayHeight-TILE_SIZE*rnd
+		self.y = DisplayHeight-TILE_SIZE*(1+high)
 		self._setTile(40, 0)
+		self.SPEED = 1
 
 	def update(self):
-		self.x -= 1
+		self.x -= self.SPEED
 
 
 class App:
 	def __init__(self):
-		self.state = "start"
+		# object
 		self.playerChr = Charactor()
 		self.floor = Floor()
 		self.ceiling = Ceiling()
-		self.obstacle = Obstacle()
+		self.obstacles = []
 
+		# valiable
+		self.state = "start"
+		self.countFromCreateObs = 255
+
+		# init
 		pyxel.init(DisplayWidth, DisplayHeight, caption="Zero One")
 		pyxel.load("assets/assets.pyxres")
 		pyxel.run(self.update, self.draw)
@@ -144,21 +149,54 @@ class App:
 			if pyxel.btnp(pyxel.KEY_SPACE):
 				self.state = "main"
 		elif self.state=="main":
-			if self.obstacle.x < 0:
-				self.obstacle = Obstacle()
-			self.obstacle.update()
-			self.playerChr.update()
-
-			# Collision
-			self.playerChr.collision(self.obstacle)
-
+			self.updateMain()
 			if self.playerChr.death:
 				self.state = "gameOver"
 		elif self.state=="gameOver":
 			if pyxel.btnp(pyxel.KEY_R):
 				self.playerChr.__init__()
-				self.obstacle.__init__()
+				self.obstacles.clear()
 				self.state = "main"
+
+	def updateMain(self):
+		# obstacle
+		## create
+		# Ensure space to move player
+		self.countFromCreateObs +=1
+		if self.countFromCreateObs > TILE_SIZE + TILE_SIZE + 6:
+			# create or not
+			rnd = random.random()
+			if rnd < 0.1:
+				# if create
+				# how many 1or2
+				num = random.randint(1,2)
+				if num==1:
+					place = random.randint(1,3)
+					self.obstacles.append(Obstacle(place))
+				elif num==2:
+					place = [1,2,3]
+					place.remove(random.randint(1,3))
+					for i in place:
+						self.obstacles.append(Obstacle(i))
+				else:
+					print("ERR")
+					exit(1)
+				self.countFromCreateObs = 0
+
+		## remove
+		for o in self.obstacles:
+			if o.x < 0:
+				self.obstacles.remove(o)
+
+			## update
+			o.update()
+
+		# player
+		self.playerChr.update()
+
+		## collision
+		for o in self.obstacles:
+			self.playerChr.collision(o)
 
 	def draw(self):
 		# background
@@ -174,7 +212,8 @@ class App:
 
 			self.floor.draw()
 			self.ceiling.draw()
-			self.obstacle.draw()
+			for o in self.obstacles:
+				o.draw()
 			self.playerChr.draw()
 
 			# # Collision
